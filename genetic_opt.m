@@ -236,14 +236,9 @@ function [] = plot_2d_function(span, gridsize, savepath)
     [X, Y] = meshgrid(x, y);
     contour(X, Y, myfunc(X, Y), 20);
     
-             
-    ax = gca;
-
-
-     title('Contour plot of 2D function to be optimized', 'FontSize', fontsize_1);
-     ylabel('Y', 'FontSize', fontsize_2)
-     xlabel('X', 'FontSize', fontsize_2)
-
+    title('Contour plot of 2D function to be optimized', 'FontSize', fontsize_1);
+    ylabel('Y', 'FontSize', fontsize_2)
+    xlabel('X', 'FontSize', fontsize_2)
     hold off; 
     
     saveas(hdl, [savepath, '.png']);

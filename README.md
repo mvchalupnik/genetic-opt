@@ -21,9 +21,11 @@ The following flowchart, taken from JOURNAL OF LIGHTWAVE TECHNOLOGY, VOL. 16, NO
 "A Genetic Algorithm for the Inverse Problem in Synthesis of Fiber Gratings"
 by Johannes Skaar and Knut Magne Risvik, shows the general process of a genetic algorithm. 
 
+
 <img src="imgs/flowchart.png" width = "300">
 
 The same paper gives illuminating schematics for the crossover and mutation operations: 
+
 <img src="imgs/crossover.png" width = "300">
 
 <img src="imgs/mutation.png" width = "300">
@@ -36,7 +38,9 @@ the genetic optimization will work best for functions with many more than
 two input variables. 
 
 The contour plot below shows the function we want to optimize. 
+
 <img src="imgs/surf_plot.png" width = "300">
+
 Since there are only two variables, X and Y, we can pretty easily optimize this function 
 using a grid search. The optimal values within the span of [-1, 1] return as 
 x = -0.4582, y = -0.6254. 
@@ -53,7 +57,9 @@ hyperparameters:
     popsize = 20; %Size of the population
 
 The optimization result is plotted below:
+
 <img src="imgs/fitness_scatterplot_test.png" width = "300">
+
 To reiterate, this example is a bit silly since we are only optimizing over
 two variables; to use genetic optimization at it's full potential, it will 
 make most sense to use it for functions of many variables. 
