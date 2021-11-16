@@ -1,11 +1,11 @@
 # genetic-opt
-## Genetic optimization implemented in Matlab
+## Genetic optimization implemented in Matlab and Python
 ### Introduction
-Optimization of functions with many variables can be difficult, particularly if the function 
+Optimization of functions with many variables can be time and resource consuming, particularly if the function 
 landscape contains many local minima, or when analytical optimization is not possible. Genetic 
 optimizations introduce randomness that can help avoid local minima, while optimizing
 function through a "survival of the fittest" strategy. This
-repo implements a simple genetic optimization in Matlab. 
+repo implements a simple genetic optimization in Matlab and python. 
 
 In a genetic optimization, 
 a population of function parameters are randomly generated. Some function parameters "mutate" 
@@ -56,10 +56,26 @@ hyperparameters:
     epochs = 20; %Number of generations to cycle through
     popsize = 20; %Size of the population
 
-The optimization result is plotted below:
+One optimization result is plotted below:
 
 <img src="imgs/fitness_scatterplot_test.png" width = "600">
 
-To reiterate, this example is a bit silly since we are only optimizing over
-two variables; to use genetic optimization at its full potential, it will 
-make most sense to use it for functions of many variables. 
+We can see the average population fitness mean does increase over epochs, 
+though there is randomness and the increase is not monotonic. 
+
+Here is another optimization result example: 
+
+<img src="imgs/fitness_scatterplot_test2.png" width = "600">
+
+Here we can see the population fitness mean increases significantly until some significant number of
+unadvantagous mutations or offspring occur around epoch 9. The stochastic nature
+of genetic optimization means sometimes the fittest survivor will die off or
+produce offspring which are less fit, lowering the population fitness mean.
+
+Note that in this example we are only optimizing over
+two variables, and have four additional dummy variables which do not affect 
+the fitness function; to use genetic optimization at its full potential, it will 
+make most sense to use it for functions of number of variables > 2. 
+
+The same code is provided both in Matlab (genetic_opt.m) and python 
+(genetic_opt.py, example.py). 

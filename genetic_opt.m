@@ -3,7 +3,7 @@ clear;
 
 %Create directories for saving files
 savedir = '~/Desktop/GeneticTest/';
-saveloc = strcat(savedir, '2021_11_15_test2/');
+saveloc = strcat(savedir, 'matlab_test1/');
 
 if ~exist(saveloc, 'dir')
    mkdir(saveloc) 
@@ -31,18 +31,18 @@ span = 1;
 % Set up hyperparameters
 hp.f1 = .20; %Fraction to randomly mutate
 hp.mutate_els = 1; %number of parameter elements to mutate within a parameter set
-hp.f2 = .30; %Fraction to randomly combine
+hp.f2 = .40; %Fraction to randomly combine
 hp.f3 = .40; %Keep the top f3 fraction for the next iteration
 hp.epochs = 20; %Number of generations to cycle through
 hp.popsize = 20; %Size of the population
 
-[fh, sv, svf] = genetic_alg(nvar, span, hp);
+[fh, sv, svf, bi, bif] = genetic_alg(nvar, span, hp);
 
 %Plot fitness history
 scatterplot_fitness(fh, strcat(saveloc, 'fitness_scatterplot_test'), zmax);
 
 %Save hyperparameters to a .mat file
-save(strcat(saveloc, 'optimization_parameters.mat'), 'hp', 'fh', 'sv', 'svf')
+save(strcat(saveloc, 'optimization_parameters.mat'), 'hp', 'fh', 'sv', 'svf', 'bi', 'bif')
 
 
 
@@ -83,7 +83,8 @@ function [zmax, inds] = grid_optimization(nvar, gridsize, span)
 end
 
 
-function [fit_hist, survivor, survivor_fitness] = genetic_alg(nvar, span, hp)
+function [fit_hist, survivor, survivor_fitness, best_individual,...
+    best_individual_fitness] = genetic_alg(nvar, span, hp)
     %Optimize via a genetic algorithm, using mutation and combination
     %to create new members in the population, and keeping only the 
     %"fittest" individuals
@@ -91,8 +92,11 @@ function [fit_hist, survivor, survivor_fitness] = genetic_alg(nvar, span, hp)
     %:span: bound the optimization space of each variable over span
     %:hp: struct containing hyperparameters
     %return :fit_hist: array containing the fitness history over each epoch
-    %return :survivor: the fittest individual
-    %return :survivor_fitness: the fitness of the fittest individual
+    %return :survivor: the fittest survivor
+    %return :survivor_fitness: the fitness of the fittest survivor
+    %return :best_individual: the fittest individual over all epochs
+    %return :best_individual_fitness: the fitness of the fittest individual
+    %over all epochs
     
     f1 = hp.f1; %Fraction to randomly mutate
     mutate_els = hp.mutate_els; %number of parameter elements to mutate within a parameter set
@@ -104,6 +108,10 @@ function [fit_hist, survivor, survivor_fitness] = genetic_alg(nvar, span, hp)
     
     %% Generate random population, each number bounded by span
     pop = (rand([popsize,nvar]) - 0.5) * 2*span;
+    
+    best_individual = pop(1, 1:nvar);
+    f_in = num2cell(best_individual, 1);
+    best_individual_fitness = myfunc(f_in{:});
     
     %Store fitness history here
     fit_hist = zeros(epochs, popsize);
@@ -172,6 +180,12 @@ function [fit_hist, survivor, survivor_fitness] = genetic_alg(nvar, span, hp)
         %% Keep top f3 in fitness
         arr = sortrows(arr, nvar+1);
         arr = arr(ceil(size(arr, 1)*(1-f3)):size(arr,1), :); %keep top f3 in fitness
+        
+        %Keep track of best individuals over all epochs
+        if arr(size(arr, 1), nvar+1) > best_individual_fitness
+           best_individual_fitness = arr(size(arr, 1), nvar+1);
+           best_individual = pop(size(pop, 1), :);
+        end
         
         %% Strip off fitness values and repeat
         pop = arr(:, 1:nvar);
