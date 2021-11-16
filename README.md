@@ -61,5 +61,5 @@ The optimization result is plotted below:
 <img src="imgs/fitness_scatterplot_test.png" width = "300">
 
 To reiterate, this example is a bit silly since we are only optimizing over
-two variables; to use genetic optimization at it's full potential, it will 
+two variables; to use genetic optimization at its full potential, it will 
 make most sense to use it for functions of many variables. 
