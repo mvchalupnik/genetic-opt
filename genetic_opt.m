@@ -17,6 +17,7 @@ disp(inds)
 
 scatterplot_fitness(fh, strcat(saveloc, 'fitness_scatterplot_test'));
 
+%Save hyperparameters to a .mat and a .txt
 
 
 
@@ -179,7 +180,7 @@ function [] = scatterplot_fitness(hist, savepath)
     hold off; 
     
     saveas(hdl, [savepath, '.png']);
-    saveas(hdl, [savepath, '.png']);
+    savefig(hdl, [savepath, '.fig']);
     close(hdl);
     
 end
