@@ -2,6 +2,7 @@
 #Genetic optimization algorithm 
 ##############
 import pdb
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -38,24 +39,24 @@ class GridOptimization():
         return :inds: array[float]
             indices for maximum function value found
         """
+        span = self.params['span']
+        gridsize = self.params['gridsize']
+        nvar = self.params['nvar']
 
-        #Create grid to search over
-        # x to NDGRID specified at runtime by user as elements of a cell array
+        
+        ls = np.linspace(-span, span, gridsize)
+        X = np.meshgrid(*(2*[ls]))
+    
+        z = self.f(*X)
 
-        # x = repmat({linspace(-span, span, gridsize)}, 1, nvar);
-        # # X from NDGRID specified at runtime by user as elements of a cell array
-        # X = cell(1, nvar);        
-        
-        # [X{:}] = ndgrid(x{:});
-            
-        # z = myfunc(X{:});
-        
-        # [zmax, linear_ind] = max(z, [], 'all', 'linear');
-        
-        # ind_out = cell(1,nvar);
-        # [ind_out{:}] = ind2sub(ones(1,nvar)*gridsize, linear_ind);
-        # inds = arrayfun(@(i) x{i}(ind_out{i}), 1:nvar);
-        # return zmax, inds
+        zmax = np.amax(z)
+
+        linear_ind = np.argmax(z)
+        ind_out = np.unravel_index(linear_ind, tuple([gridsize for i in range(0,nvar)]))
+        inds = [ls[i] for i in ind_out]
+        inds = np.flip(inds) #Meshgrid switches dimensions; must flip
+
+        return zmax, inds
 
 
     def plot_2d_function(self, savepath):
