@@ -29,4 +29,31 @@ The same paper gives illuminating schematics for the crossover and mutation oper
 <img src="imgs/mutation.png" width = "300">
 
 ### Code description
-This code gives a simple implementation of a genetic optimization. 
+This code gives a simple implementation of a genetic optimization. Solely for 
+ease of visualization and ease of comparison to another optimization technique (grid search),
+ the example implemented is only a 2-D function; however, 
+the genetic optimization will work best for functions with many more than 
+two input variables. 
+
+The contour plot below shows the function we want to optimize. 
+<img src="imgs/surf_plot.png" width = "300">
+Since there are only two variables, X and Y, we can pretty easily optimize this function 
+using a grid search. The optimal values within the span of [-1, 1] return as 
+x = -0.4582, y = -0.6254. 
+
+Next, we run the genetic algorithm. We introduce 4 additional dummy variables
+to make full use of the mutation and combination. We run with the following
+hyperparameters: 
+
+    f1 = .20; %Fraction to randomly mutate
+    mutate_els = 1; %number of parameter elements to mutate within a parameter set
+    f2 = .30; %Fraction to randomly combine
+    f3 = .40; %Keep the top f3 fraction for the next iteration
+    epochs = 20; %Number of generations to cycle through
+    popsize = 20; %Size of the population
+
+The optimization result is plotted below:
+<img src="imgs/fitness_scatterplot_test.png" width = "300">
+To reiterate, this example is a bit silly since we are only optimizing over
+two variables; to use genetic optimization at it's full potential, it will 
+make most sense to use it for functions of many variables. 

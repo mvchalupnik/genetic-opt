@@ -46,7 +46,7 @@ save(strcat(saveloc, 'optimization_parameters.mat'), 'hp', 'fh', 'sv', 'svf')
 
 
 
-function f = myfunc(x1, x2)
+function f = myfunc(x1, x2, varargin)
     f = 3*(1-x1).^2.*exp(-(x1.^2) - (x2+1).^2) ... 
    - 10*(x1/5 - x1.^3 - x2.^5).*exp(-x1.^2-x2.^2) ... 
    - 1/3*exp(-(x1+1).^2 - x2.^2); %Matlab's "peaks" function
@@ -65,18 +65,20 @@ function [zmax, inds] = grid_optimization(nvar, gridsize, span)
     %return :inds: indices for maximum function value found
     
     %Create grid to search over
+    % x to NDGRID specified at runtime by user as elements of a cell array
+    x = repmat({linspace(-span, span, gridsize)}, 1, nvar);
+    % X from NDGRID specified at runtime by user as elements of a cell array
+    X = cell(1, nvar);        
     
-    X1 = linspace(-span, span, gridsize);
-    X2 = linspace(-span, span, gridsize);
-    
-    [x1,x2] = ndgrid(X1, X2); %HARDCODED NVAR
-    
-    z = myfunc(x1, x2);
+    [X{:}] = ndgrid(x{:});
+        
+    z = myfunc(X{:});
     
     [zmax, linear_ind] = max(z, [], 'all', 'linear');
-    [i1, i2] = ind2sub([gridsize, gridsize], linear_ind);
-    inds = [X1(i1), X2(i2)];
     
+    ind_out = cell(1,nvar);
+    [ind_out{:}] = ind2sub(ones(1,nvar)*gridsize, linear_ind);
+    inds = arrayfun(@(i) x{i}(ind_out{i}), 1:nvar);
     
 end
 
@@ -155,7 +157,11 @@ function [fit_hist, survivor, survivor_fitness] = genetic_alg(nvar, span, hp)
         
         
         %% Fitness test on random population
-        fitness = myfunc(pop(:,1), pop(:,2)); %HARDCODED
+        
+        %fitness = myfunc(pop(:,1), pop(:,2));
+        pop_in = num2cell(pop, 1);
+        fitness = myfunc(pop_in{:});
+        
         arr = [pop, fitness]; 
         disp('Initial parameters (first _nvar_ columns) and fitness values (last col): ')
         disp(num2str(arr))
