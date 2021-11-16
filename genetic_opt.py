@@ -69,13 +69,6 @@ class GridOptimization():
         fontsize_2 = 14
     
         fig, ax = plt.subplots()
-            
-        # ax.plot(self.df.index, self.df[feature], '-o',color='blue')
-
-        # ax.set(xlabel='Time', ylabel = feature, title=feature+ ' vs ' + self.resample_by)
-        # plt.xticks(rotation=60)
-        # ax.grid(b=True)
-        # ax.legend()
 
         span = self.params['span']
         gridsize = self.params['gridsize']
@@ -135,8 +128,10 @@ class GeneticOptimization():
         to create new members in the population, and keeping only the 
         "fittest" individuals
         return :fit_hist: array containing the fitness history over each epoch
-        return :survivor: the fittest individual
-        return :survivor_fitness: the fitness of the fittest individual
+        return :survivor: the fittest survivor
+        return :survivor_fitness: the fitness of the fittest survivor
+        return :best_individual: the fittest individual over all epochs
+        return :best_individual_fitness: the fitness of the fittest individual over all epochs
         """
         span = self.params['span'] #bound the optimization space of each variable over span
         nvar = self.params['nvar'] #number of variables to optimize the function over
@@ -153,6 +148,10 @@ class GeneticOptimization():
 
         # Generate random population, each number bounded by span
         pop = (np.random.rand(popsize,nvar) - 0.5) * 2*span
+
+        #initialize best individual and best individual fitness arbitrarily
+        best_individual = pop[0, 0:nvar]
+        best_individual_fitness = self.f(*np.transpose(best_individual))
     
         #Store fitness history here
         fit_hist = np.zeros((epochs, popsize))
@@ -209,50 +208,50 @@ class GeneticOptimization():
             arr = arr[arr[:,nvar].argsort()]
             arr = arr[int(np.ceil(len(arr)*(1-f3))):len(arr), :] #keep top f3 in fitness
             
+            #Keep track of best individual over all epochs
+            if arr[len(arr)-1, nvar] > best_individual_fitness:
+                best_individual_fitness = arr[len(arr)-1, nvar]
+                best_individual = pop[len(pop)-1, :]
+
             # Strip off fitness values and repeat
             pop = arr[:, 0:nvar]
         
         survivor = pop[len(pop)-1, :]
         survivor_fitness = arr[len(arr)-1, nvar]
         
-        return fit_hist, survivor, survivor_fitness
+        return fit_hist, survivor, survivor_fitness, best_individual, best_individual_fitness
 
 
 
-# function [] = scatterplot_fitness(hist, savepath, fmax)
-#     %Scatter plot the fitness of each individual at each epoch
-#     %:hist: a 2D array of fitnesses with each epoch
-#     %:savepath: the path to save the figure
-#     %:fmax: function maximum determined by gridsearch
+    def scatterplot_fitness(self, hist, savepath, fmax):
+        #%Scatter plot the fitness of each individual at each epoch
+        #:hist: a 2D array of fitnesses with each epoch
+        #:savepath: the path to save the figure
+        #:fmax: function maximum determined by gridsearch
+        
+        fontsize_1 = 20;
+        fontsize_2 = 16;
+        fontsize_3 = 14;
+        
     
-#     fontsize_1 = 20;
-#     fontsize_2 = 16;
-#     fontsize_3 = 14;
-    
-#     hdl = figure;
-#     hold on;
-#     plot(1:size(hist, 1), mean(hist, 2), '--k')
-#     plot(1:size(hist, 1), fmax*ones(1,size(hist, 1)), '--r')
-#     legend('Population Mean', 'Grid Search Max', 'AutoUpdate', 'off')
-    
-#     scatter(1:size(hist, 1), hist, 40, 'MarkerEdgeColor',[0 .5 .5],...
-#               'MarkerFaceColor',[0 .7 .7],...
-#               'LineWidth',1.5)
-             
-#     ax = gca;
+        fig, ax = plt.subplots()
+            
+        ax.plot(np.arange(1,len(hist[0])+1), np.mean(hist, 0), '--',color='black', label='Population Mean')
+        ax.plot(np.arange(1,len(hist[0])+ 1), fmax*np.ones(len(hist[0])), '--r', label = 'Grid Search Max')
+        plt.legend()
 
-#     ax.XLim = [0,size(hist,1)+1];
+        for x in hist:
+            plt.scatter(np.arange(1,len(hist[0])+1), x, s=40, color=(0 ,.7, .7), alpha = 0.7)
 
-#     title('Fitnesses during genetic optimization', 'FontSize', fontsize_1);
-#     ylabel('Fitness', 'FontSize', fontsize_2)
-#     xlabel('Epoch', 'FontSize', fontsize_2)
-#     ax.FontSize = fontsize_3;
-    
-#     hold off; 
-    
-#     saveas(hdl, [savepath, '.png']);
-#     savefig(hdl, [savepath, '.fig']);
-#     close(hdl);
-    
-# end
 
+        ax.grid(b=True)
+        plt.xlim(0, len(hist[0])+1)
+
+        
+        plt.title('Fitnesses during genetic optimization', fontsize=fontsize_1)
+        plt.ylabel('Fitness', fontsize=fontsize_2)
+        plt.xlabel('Epoch', fontsize=fontsize_2)
+        plt.tight_layout() 
+        fig.savefig(savepath + ".png")
+        plt.close()
+                 
