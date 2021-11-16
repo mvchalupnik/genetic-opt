@@ -56,7 +56,7 @@ function [] = genetic_alg(nvar, span)
     f3 = .40; %Keep the top f3 fraction for the next iteration
     epochs = 1; %Number of generations to cycle through
     
-    popsize = 20; 
+    popsize = 3; 
     
     %% Generate random population, each number bounded by span
     pop = (rand([popsize,nvar]) - 0.5) * 2*span;
@@ -65,7 +65,7 @@ function [] = genetic_alg(nvar, span)
         disp(strcat('Running epoch ', num2str(j)));
        
         %% If len(pop) < popsize, randomly create new individuals
-        
+        %if length(pop) 
 
         %% Mutate random f1 proportion
         mutate_indices = randperm(popsize); %Use random permuation to avoid repeating indices
@@ -92,26 +92,20 @@ function [] = genetic_alg(nvar, span)
         %variables
         for i = 1:2:length(num_parents)
             disp(pop)
-            disp('was pop')
             %Randomly select indices to mutate
             combine_el_indices = randperm(nvar);
             firsthalf_indices = combine_el_indices(1:ceil(nvar/2));
             secondhalf_indices = combine_el_indices(ceil(nvar/2)+1:nvar);
-            disp('parent1')
             
             parent1 = pop(combine_indices(i), :);
             disp(parent1)
             parent2 = pop(combine_indices(i+1), :);
-            disp('parent2')
             disp(parent2)
-            disp('hi');
             
             %Mutate that index of individual i of the population
             pop(combine_indices(i),firsthalf_indices) = parent2(firsthalf_indices);
-            pop(combine_indices(i+1),secondhalf_indices) = parent1(secondhalf_indices);
+            pop(combine_indices(i+1),firsthalf_indices) = parent1(firsthalf_indices);
             disp(pop)
-            disp('hi')
-            
         end
         
         
@@ -123,9 +117,8 @@ function [] = genetic_alg(nvar, span)
 
         %% Keep top f3 in fitness
         arr = sortrows(arr, nvar+1);
-        arr = arr(length(arr)*(1-f3), :); %keep top f3 in fitness
-        disp('hi')
-
+        arr = arr(ceil(size(arr, 1)*(1-f3)):size(arr,1), :); %keep top f3 in fitness
+        disp(arr)
         %% Repeat
     end
 end
