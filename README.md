@@ -5,7 +5,7 @@ Optimization of functions with many variables can be time and resource consuming
 landscape contains many local minima, or when analytical optimization is not possible. Genetic 
 optimizations introduce randomness that can help avoid local minima, while optimizing
 function through a "survival of the fittest" strategy. This
-repo implements a simple genetic optimization in Matlab and python. 
+repo implements a simple genetic optimization, with the same code duplicated for both Matlab and python. 
 
 In a genetic optimization, 
 a population of function parameters are randomly generated. Some function parameters "mutate" 
@@ -58,7 +58,7 @@ hyperparameters:
 
 One optimization result is plotted below:
 
-<img src="imgs/fitness_scatterplot_test.png" width = "600">
+<img src="imgs/fitness_scatterplot_test1.png" width = "600">
 
 We can see the average population fitness mean does increase over epochs, 
 though there is randomness and the increase is not monotonic. 
