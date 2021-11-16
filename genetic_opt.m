@@ -1,7 +1,7 @@
 % Genetic optimization algorithm
 
 savedir = '~/Desktop/GeneticTest/';
-saveloc = strcat(savedir, '2021_11_05_test1');
+saveloc = strcat(savedir, '2021_11_05_test1/');
 
 if ~exist(saveloc, 'dir')
    mkdir(saveloc) 
@@ -13,7 +13,12 @@ end
 disp(zmax)
 disp(inds)
 
-genetic_alg(6, 1)
+[fh, sv] = genetic_alg(6, 1);
+
+scatterplot_fitness(fh, strcat(saveloc, 'fitness_scatterplot_test'));
+
+
+
 
 function f = myfunc(x1, x2)
     %f =  x^3 + 5*y^2 + 8*Sin(z);
@@ -49,23 +54,38 @@ function [zmax, inds] = analytical_optimization(nvar, gridsize, span)
 end
 
 
-function [] = genetic_alg(nvar, span)
+function [fit_hist, survivor] = genetic_alg(nvar, span)
+    %Optimize via a genetic algorithm, using mutation and combination
+    %to create new members in the population, and keeping only the 
+    %"fittest" individuals
+    %:nvar: number of variables to optimize the function over
+    %:span: bound the optimization space of each variable over span
+    %return :fit_hist: array containing the fitness history over each epoch
+    %return :survivor: the fittest individual
+    
+    
     %% Set up hyperparameters
     f1 = .20; %Fraction to randomly mutate
     f2 = .30; %Fraction to randomly combine
     f3 = .40; %Keep the top f3 fraction for the next iteration
-    epochs = 1; %Number of generations to cycle through
-    
-    popsize = 3; 
+    epochs = 2; %Number of generations to cycle through
+    popsize = 3; %Size of the population
     
     %% Generate random population, each number bounded by span
     pop = (rand([popsize,nvar]) - 0.5) * 2*span;
     
+    %Store fitness history here
+    fit_hist = zeros(epochs, popsize);
+    
     for j = 1:epochs
+        
         disp(strcat('Running epoch ', num2str(j)));
        
         %% If len(pop) < popsize, randomly create new individuals
-        %if length(pop) 
+        if size(pop, 1) < popsize
+           new_pop_members = (rand([popsize - size(pop, 1),nvar]) - 0.5) * 2*span;
+           pop = [pop; new_pop_members];
+        end
 
         %% Mutate random f1 proportion
         mutate_indices = randperm(popsize); %Use random permuation to avoid repeating indices
@@ -112,13 +132,54 @@ function [] = genetic_alg(nvar, span)
         %% Fitness test on random population
         fitness = myfunc(pop(:,1), pop(:,2));
         arr = [pop, fitness]; 
-        disp('Initial parameters (first two columns) and fitness values (third col): ')
+        disp('Initial parameters (first _nvar_ columns) and fitness values (last col): ')
         disp(num2str(arr))
+        
+        %Save fitness history
+        fit_hist(j, :) = squeeze(arr(:, nvar+1));
 
         %% Keep top f3 in fitness
         arr = sortrows(arr, nvar+1);
         arr = arr(ceil(size(arr, 1)*(1-f3)):size(arr,1), :); %keep top f3 in fitness
-        disp(arr)
-        %% Repeat
+        
+        %% Strip off fitness values and repeat
+        pop = arr(:, 1:nvar);
+        
     end
+    survivor = pop(size(arr,1), :);
+end
+
+function [] = scatterplot_fitness(hist, savepath)
+    %Scatter plot the fitness of each individual at each epoch
+    %:hist: a 2D array of fitnesses with each epoch
+    %:savepath: the path to save the figure
+    
+    fontsize_1 = 20;
+    fontsize_2 = 16;
+    fontsize_3 = 14;
+    
+    hdl = figure;
+    hold on;
+    plot(1:size(hist, 1), mean(hist, 2), '--k')
+    legend('Population Mean', 'AutoUpdate', 'off')
+    
+    scatter(1:size(hist, 1), hist, 40, 'MarkerEdgeColor',[0 .5 .5],...
+              'MarkerFaceColor',[0 .7 .7],...
+              'LineWidth',1.5)
+             
+    ax = gca;
+
+    ax.XLim = [0,size(hist,1)+1];
+
+    title('Fitnesses during genetic optimization', 'FontSize', fontsize_1);
+    ylabel('Fitness', 'FontSize', fontsize_2)
+    xlabel('Epoch', 'FontSize', fontsize_2)
+    ax.FontSize = fontsize_3;
+    
+    hold off; 
+    
+    saveas(hdl, [savepath, '.png']);
+    saveas(hdl, [savepath, '.png']);
+    close(hdl);
+    
 end
