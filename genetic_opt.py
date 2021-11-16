@@ -32,9 +32,8 @@ class GridOptimization():
 
     def grid_optimization(self):
         """
-        Numerically optimize a function with 2 variables through (inefficient) gridsearch
-        Enumerate with some step size dx, and calculate the function at each point
-        # return :zmax: float
+        Numerically optimize a function with _nvar_ variables through (inefficient) gridsearch
+        return :zmax: float
             maximum function value found
         return :inds: array[float]
             indices for maximum function value found
@@ -93,6 +92,7 @@ class GridOptimization():
         plt.xlabel('X', fontsize=fontsize_2)
         plt.tight_layout() 
         fig.savefig(savepath + ".png")
+        plt.close()
 
 
 
@@ -121,117 +121,103 @@ class GeneticOptimization():
         Number of generations to cycle through
     params['popsize']: int
         Size of the population
+    params['rseed']: int
+        Seed for random number generator
     """
 
-    def __init__(self, func, params):
+    def __init__(self, params, func):
         self.params = params
-        self.func = func
+        self.f = func
 
 
+    def genetic_alg(self):
+        """ Optimize via a genetic algorithm, using mutation and combination
+        to create new members in the population, and keeping only the 
+        "fittest" individuals
+        return :fit_hist: array containing the fitness history over each epoch
+        return :survivor: the fittest individual
+        return :survivor_fitness: the fitness of the fittest individual
+        """
+        span = self.params['span'] #bound the optimization space of each variable over span
+        nvar = self.params['nvar'] #number of variables to optimize the function over
 
+        f1 = self.params['f1'] #Fraction to randomly mutate
+        mutate_els = self.params['mutate_els'] #number of parameter elements to mutate within a parameter set
+        f2 = self.params['f2'] #Fraction to randomly combine
+        f3 = self.params['f3'] #Keep the top f3 fraction for the next iteration
+        epochs = self.params['epochs'] #Number of generations to cycle through
+        popsize = self.params['popsize'] #Size of the population
 
+        #seed rng for reproducibility
+        np.random.seed(self.params['rseed'])
 
-
-
-
-
-# function [fit_hist, survivor, survivor_fitness] = genetic_alg(nvar, span, hp)
-#     %Optimize via a genetic algorithm, using mutation and combination
-#     %to create new members in the population, and keeping only the 
-#     %"fittest" individuals
-#     %:nvar: number of variables to optimize the function over
-#     %:span: bound the optimization space of each variable over span
-#     %:hp: struct containing hyperparameters
-#     %return :fit_hist: array containing the fitness history over each epoch
-#     %return :survivor: the fittest individual
-#     %return :survivor_fitness: the fitness of the fittest individual
+        # Generate random population, each number bounded by span
+        pop = (np.random.rand(popsize,nvar) - 0.5) * 2*span
     
-#     f1 = hp.f1; %Fraction to randomly mutate
-#     mutate_els = hp.mutate_els; %number of parameter elements to mutate within a parameter set
-#     f2 = hp.f2; %Fraction to randomly combine
-#     f3 = hp.f3; %Keep the top f3 fraction for the next iteration
-#     epochs = hp.epochs; %Number of generations to cycle through
-#     popsize = hp.popsize; %Size of the population
-
-    
-#     %% Generate random population, each number bounded by span
-#     pop = (rand([popsize,nvar]) - 0.5) * 2*span;
-    
-#     %Store fitness history here
-#     fit_hist = zeros(epochs, popsize);
-    
-#     for j = 1:epochs
+        #Store fitness history here
+        fit_hist = np.zeros((epochs, popsize))
         
-#         disp(strcat('Running epoch ', num2str(j)));
+        for j in range(0, epochs):
+        
+            print('Running epoch {0}'.format(j));
        
-#         %% If len(pop) < popsize, randomly create new individuals
-#         if size(pop, 1) < popsize
-#            new_pop_members = (rand([popsize - size(pop, 1),nvar]) - 0.5) * 2*span;
-#            pop = [pop; new_pop_members];
-#         end
+            if np.shape(pop)[0] < popsize:
+                new_pop_members = (np.random.rand(popsize - np.shape(pop)[0],nvar) - 0.5) * 2*span
+                pop = np.append(pop, new_pop_members, axis=0) 
 
-#         %% Mutate random f1 proportion
-#         mutate_indices = randperm(popsize); %Use random permuation to avoid repeating indices
-#         mutate_indices = mutate_indices(1:ceil(popsize*f1));
-
-#         %For each element in pop, randomly mutate _mutate_els_ variables
-#         for i = 1:length(mutate_indices)
-#             %Randomly select indices to mutate
-#             mutate_el_indices = randperm(nvar);
-#             mutate_el_indices = mutate_el_indices(1:mutate_els);
+            # Mutate random f1 proportion
+            mutate_indices = np.random.choice(np.arange(0,popsize), size = int(np.ceil(popsize*f1)), replace = False)
             
-#             %Mutate that index of individual mutate_indices(i) of the population
-#             pop(mutate_indices(i),mutate_el_indices) = (rand(1) - 0.5) * 2*span;
-#         end
+            # For each element in pop, randomly mutate _mutate_els_ variables
+            for i in range(0, len(mutate_indices)):
+                # Randomly select indices to mutate
+                mutate_el_indices = np.random.choice(np.arange(0,nvar), size = mutate_els, replace = False)
+                # Mutate that index of individual mutate_indices(i) of the population
+                pop[mutate_indices[i],mutate_el_indices] = (np.random.rand(1) - 0.5) * 2*span
 
-#         %% Genetically combine random f2; produce 2 offspring per 2 parents
-#         % to avoid population loss
-#         combine_indices = randperm(popsize); %Use random permuation to avoid repeating indices
-#         num_parents = ceil((popsize*f2)/2)*2; %make sure result is even
-#         combine_indices = combine_indices(1:num_parents);
 
-#         %For each 2 elements in pop (the parents), randomly combine
-#         %variables
-#         for i = 1:2:length(num_parents)
-#             %Randomly select indices to mutate
-#             combine_el_indices = randperm(nvar);
-#             firsthalf_indices = combine_el_indices(1:ceil(nvar/2));
-#             secondhalf_indices = combine_el_indices(ceil(nvar/2)+1:nvar);
+            # Genetically combine random f2; produce 2 offspring per 2 parents
+            # to avoid population loss            
+            num_parents = int(np.ceil((popsize*f2)/2)*2) # make sure result is even
+            combine_indices = np.random.choice(np.arange(0,popsize), size = num_parents, replace = False)
+
+
+            # For each 2 elements in pop (the parents), randomly combine variables
+            for i in range(0, num_parents, 2):
+                # Randomly select indices to mutate
+                combine_el_indices = np.random.choice(np.arange(0,nvar), size = int(np.ceil(nvar/2)), replace = False)
+                
+                parent1 = np.copy(pop[combine_indices[i], :])
+                parent2 = np.copy(pop[combine_indices[i+1], :])
+                
+                #Combine parent1 and parent2 of the population to produce 2 offspring
+                pop[combine_indices[i],combine_el_indices] = parent2[combine_el_indices]
+                pop[combine_indices[i+1],combine_el_indices] = parent1[combine_el_indices]
+        
+
+
+            # Fitness test on random population
+
+            fitness = self.f(*np.transpose(pop))
+            arr = np.append(pop, np.transpose(np.array([fitness])), axis= 1)
+            print('Initial parameters (first _nvar_ columns) and fitness values (last col): {0}'.format(arr))
             
-#             parent1 = pop(combine_indices(i), :);
-#             parent2 = pop(combine_indices(i+1), :);
-            
-#             %Combine parent1 and parent2 of the population to produce 2
-#             %offspring
-#             pop(combine_indices(i),firsthalf_indices) = parent2(firsthalf_indices);
-#             pop(combine_indices(i+1),firsthalf_indices) = parent1(firsthalf_indices);
-#         end
-        
-        
-#         %% Fitness test on random population
-        
-#         %fitness = myfunc(pop(:,1), pop(:,2));
-#         pop_in = num2cell(pop, 1);
-#         fitness = myfunc(pop_in{:});
-        
-#         arr = [pop, fitness]; 
-#         disp('Initial parameters (first _nvar_ columns) and fitness values (last col): ')
-#         disp(num2str(arr))
-        
-#         %Save fitness history
-#         fit_hist(j, :) = squeeze(arr(:, nvar+1));
+            # Save fitness history
+            fit_hist[j, :] = fitness
 
-#         %% Keep top f3 in fitness
-#         arr = sortrows(arr, nvar+1);
-#         arr = arr(ceil(size(arr, 1)*(1-f3)):size(arr,1), :); %keep top f3 in fitness
+            # Keep top f3 in fitness
+            arr = arr[arr[:,nvar].argsort()]
+            arr = arr[int(np.ceil(len(arr)*(1-f3))):len(arr), :] #keep top f3 in fitness
+            
+            # Strip off fitness values and repeat
+            pop = arr[:, 0:nvar]
         
-#         %% Strip off fitness values and repeat
-#         pop = arr(:, 1:nvar);
+        survivor = pop[len(pop)-1, :]
+        survivor_fitness = arr[len(arr)-1, nvar]
         
-#     end
-#     survivor = pop(size(arr,1), :);
-#     survivor_fitness = arr(size(arr,1), nvar+1);
-# end
+        return fit_hist, survivor, survivor_fitness
+
+
 
 # function [] = scatterplot_fitness(hist, savepath, fmax)
 #     %Scatter plot the fitness of each individual at each epoch
