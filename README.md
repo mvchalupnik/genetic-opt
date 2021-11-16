@@ -22,13 +22,13 @@ The following flowchart, taken from JOURNAL OF LIGHTWAVE TECHNOLOGY, VOL. 16, NO
 by Johannes Skaar and Knut Magne Risvik, shows the general process of a genetic algorithm. 
 
 
-<img src="imgs/flowchart.png" width = "300">
+<img src="imgs/flowchart.png" width = "600">
 
 The same paper gives illuminating schematics for the crossover and mutation operations: 
 
-<img src="imgs/crossover.png" width = "300">
+<img src="imgs/crossover.png" width = "600">
 
-<img src="imgs/mutation.png" width = "300">
+<img src="imgs/mutation.png" width = "600">
 
 ### Code description
 This code gives a simple implementation of a genetic optimization. Solely for 
@@ -39,7 +39,7 @@ two input variables.
 
 The contour plot below shows the function we want to optimize. 
 
-<img src="imgs/surf_plot.png" width = "300">
+<img src="imgs/surf_plot.png" width = "600">
 
 Since there are only two variables, X and Y, we can pretty easily optimize this function 
 using a grid search. The optimal values within the span of [-1, 1] return as 
@@ -58,7 +58,7 @@ hyperparameters:
 
 The optimization result is plotted below:
 
-<img src="imgs/fitness_scatterplot_test.png" width = "300">
+<img src="imgs/fitness_scatterplot_test.png" width = "600">
 
 To reiterate, this example is a bit silly since we are only optimizing over
 two variables; to use genetic optimization at it's full potential, it will 
