@@ -1,5 +1,6 @@
 % Genetic optimization algorithm
 
+%Create directories for saving files
 savedir = '~/Desktop/GeneticTest/';
 saveloc = strcat(savedir, '2021_11_05_test1/');
 
@@ -7,14 +8,20 @@ if ~exist(saveloc, 'dir')
    mkdir(saveloc) 
 end
 
-%seed rand
+%seed rng for reproducibility
+rng(1);
 
-[zmax, inds] = analytical_optimization( 2, 3, 1);
+%Plot the function we will optimize
+
+%Run grid optimization 
+[zmax, inds] = grid_optimization(2, 300, 1);
 disp(zmax)
 disp(inds)
 
+%Run genetic optimization
 [fh, sv] = genetic_alg(6, 1);
 
+%Plot fitness history
 scatterplot_fitness(fh, strcat(saveloc, 'fitness_scatterplot_test'));
 
 %Save hyperparameters to a .mat and a .txt
@@ -22,22 +29,22 @@ scatterplot_fitness(fh, strcat(saveloc, 'fitness_scatterplot_test'));
 
 
 function f = myfunc(x1, x2)
-    %f =  x^3 + 5*y^2 + 8*Sin(z);
     f = 3*(1-x1).^2.*exp(-(x1.^2) - (x2+1).^2) ... 
    - 10*(x1/5 - x1.^3 - x2.^5).*exp(-x1.^2-x2.^2) ... 
-   - 1/3*exp(-(x1+1).^2 - x2.^2); % + (z-1)^2 ; %"peaks" function
+   - 1/3*exp(-(x1+1).^2 - x2.^2); %Matlab's "peaks" function
 end
 
-function [zmax, inds] = analytical_optimization(nvar, gridsize, span)
-    %Numerically optimize some differentiable multivariable function 
+function [zmax, inds] = grid_optimization(nvar, gridsize, span)
+    %Numerically optimize a function with 2 variables
     %through (inefficient) gridsearch
     %Enumerate with some step size dx, and calculate the function 
     %at each point
-    %:func: function to optimize
     %:nvar: number of variables in function to optimize
     %:gridsize: size of grid to optimize over
     %:span: span to optimize grid over (from -span to span, for each
     %variable)
+    %return :zmax: maximum function value found
+    %return :inds: indices for maximum function value found
     
     %Create grid to search over
     

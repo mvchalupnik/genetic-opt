@@ -1,8 +1,13 @@
 # genetic-opt
 ## Genetic optimization implemented in Matlab
+### Introduction
 Optimization of functions with many variables can be difficult, particularly if the function 
-landscape contains many local minima, or when analytical optimization is not possible. This
-repo implements a simple genetic optimization in Matlab. In a genetic optimization, 
+landscape contains many local minima, or when analytical optimization is not possible. Genetic 
+optimizations introduce randomness that can help avoid local minima, while optimizing
+function through a "survival of the fittest" strategy. This
+repo implements a simple genetic optimization in Matlab. 
+
+In a genetic optimization, 
 a population of function parameters are randomly generated. Some function parameters "mutate" 
 (through random replacement of some of their parameters) and some combine with other function
 parameters to produce "offspring" parameter sets. At the end of an epoch, the function 
@@ -23,3 +28,5 @@ The same paper gives illuminating schematics for the crossover and mutation oper
 
 <img src="imgs/mutation.png" width = "300">
 
+### Code description
+This code gives a simple implementation of a genetic optimization. 
