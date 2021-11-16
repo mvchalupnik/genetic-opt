@@ -33,9 +33,8 @@ The same paper gives illuminating schematics for the crossover and mutation oper
 ### Code description
 This code gives a simple implementation of a genetic optimization. Solely for 
 ease of visualization and ease of comparison to another optimization technique (grid search),
- the example implemented is only a 2-D function; however, 
-the genetic optimization will work best for functions with many more than 
-two input variables. 
+ the example function implemented here is only a 2-D function; however, 
+this function can be changed in the code. 
 
 The contour plot below shows the function we want to optimize. 
 
@@ -63,7 +62,7 @@ One optimization result is plotted below:
 We can see the average population fitness mean does increase over epochs, 
 though there is randomness and the increase is not monotonic. 
 
-Here is another optimization result example: 
+Here is another optimization result example with different parameters: 
 
 <img src="imgs/fitness_scatterplot_test2.png" width = "600">
 
