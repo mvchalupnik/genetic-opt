@@ -1,8 +1,9 @@
 % Genetic optimization algorithm
+clear;
 
 %Create directories for saving files
 savedir = '~/Desktop/GeneticTest/';
-saveloc = strcat(savedir, '2021_11_05_test1/');
+saveloc = strcat(savedir, '2021_11_15_test2/');
 
 if ~exist(saveloc, 'dir')
    mkdir(saveloc) 
@@ -12,19 +13,36 @@ end
 rng(1);
 
 %Plot the function we will optimize
+gridsize = 300;
+span = 1;
+plot_2d_function(span,gridsize, strcat(saveloc, 'surf_plot'));
 
 %Run grid optimization 
-[zmax, inds] = grid_optimization(2, 300, 1);
-disp(zmax)
+nvar = 2; 
+[zmax, inds] = grid_optimization(nvar, gridsize, span);
+
+disp(strcat('Grid search optimization maximum: ', num2str(zmax)))
+disp('Grid search optimization maximum indices: ')
 disp(inds)
 
 %Run genetic optimization
-[fh, sv] = genetic_alg(6, 1);
+nvar = 6; %add extra variables as noise here
+span = 1;
+% Set up hyperparameters
+hp.f1 = .20; %Fraction to randomly mutate
+hp.mutate_els = 1; %number of parameter elements to mutate within a parameter set
+hp.f2 = .30; %Fraction to randomly combine
+hp.f3 = .40; %Keep the top f3 fraction for the next iteration
+hp.epochs = 20; %Number of generations to cycle through
+hp.popsize = 20; %Size of the population
+
+[fh, sv, svf] = genetic_alg(nvar, span, hp);
 
 %Plot fitness history
-scatterplot_fitness(fh, strcat(saveloc, 'fitness_scatterplot_test'));
+scatterplot_fitness(fh, strcat(saveloc, 'fitness_scatterplot_test'), zmax);
 
-%Save hyperparameters to a .mat and a .txt
+%Save hyperparameters to a .mat file
+save(strcat(saveloc, 'optimization_parameters.mat'), 'hp', 'fh', 'sv', 'svf')
 
 
 
@@ -51,33 +69,36 @@ function [zmax, inds] = grid_optimization(nvar, gridsize, span)
     X1 = linspace(-span, span, gridsize);
     X2 = linspace(-span, span, gridsize);
     
-    [x1,x2] = ndgrid(X1, X2);
+    [x1,x2] = ndgrid(X1, X2); %HARDCODED NVAR
     
     z = myfunc(x1, x2);
     
     [zmax, linear_ind] = max(z, [], 'all', 'linear');
     [i1, i2] = ind2sub([gridsize, gridsize], linear_ind);
-    inds = [i1, i2];
+    inds = [X1(i1), X2(i2)];
+    
     
 end
 
 
-function [fit_hist, survivor] = genetic_alg(nvar, span)
+function [fit_hist, survivor, survivor_fitness] = genetic_alg(nvar, span, hp)
     %Optimize via a genetic algorithm, using mutation and combination
     %to create new members in the population, and keeping only the 
     %"fittest" individuals
     %:nvar: number of variables to optimize the function over
     %:span: bound the optimization space of each variable over span
+    %:hp: struct containing hyperparameters
     %return :fit_hist: array containing the fitness history over each epoch
     %return :survivor: the fittest individual
+    %return :survivor_fitness: the fitness of the fittest individual
     
-    
-    %% Set up hyperparameters
-    f1 = .20; %Fraction to randomly mutate
-    f2 = .30; %Fraction to randomly combine
-    f3 = .40; %Keep the top f3 fraction for the next iteration
-    epochs = 2; %Number of generations to cycle through
-    popsize = 3; %Size of the population
+    f1 = hp.f1; %Fraction to randomly mutate
+    mutate_els = hp.mutate_els; %number of parameter elements to mutate within a parameter set
+    f2 = hp.f2; %Fraction to randomly combine
+    f3 = hp.f3; %Keep the top f3 fraction for the next iteration
+    epochs = hp.epochs; %Number of generations to cycle through
+    popsize = hp.popsize; %Size of the population
+
     
     %% Generate random population, each number bounded by span
     pop = (rand([popsize,nvar]) - 0.5) * 2*span;
@@ -100,13 +121,12 @@ function [fit_hist, survivor] = genetic_alg(nvar, span)
         mutate_indices = mutate_indices(1:ceil(popsize*f1));
 
         %For each element in pop, randomly mutate _mutate_els_ variables
-        mutate_els = 1; %Can modify this
         for i = 1:length(mutate_indices)
             %Randomly select indices to mutate
             mutate_el_indices = randperm(nvar);
             mutate_el_indices = mutate_el_indices(1:mutate_els);
             
-            %Mutate that index of individual i of the population
+            %Mutate that index of individual mutate_indices(i) of the population
             pop(mutate_indices(i),mutate_el_indices) = (rand(1) - 0.5) * 2*span;
         end
 
@@ -119,26 +139,23 @@ function [fit_hist, survivor] = genetic_alg(nvar, span)
         %For each 2 elements in pop (the parents), randomly combine
         %variables
         for i = 1:2:length(num_parents)
-            disp(pop)
             %Randomly select indices to mutate
             combine_el_indices = randperm(nvar);
             firsthalf_indices = combine_el_indices(1:ceil(nvar/2));
             secondhalf_indices = combine_el_indices(ceil(nvar/2)+1:nvar);
             
             parent1 = pop(combine_indices(i), :);
-            disp(parent1)
             parent2 = pop(combine_indices(i+1), :);
-            disp(parent2)
             
-            %Mutate that index of individual i of the population
+            %Combine parent1 and parent2 of the population to produce 2
+            %offspring
             pop(combine_indices(i),firsthalf_indices) = parent2(firsthalf_indices);
             pop(combine_indices(i+1),firsthalf_indices) = parent1(firsthalf_indices);
-            disp(pop)
         end
         
         
         %% Fitness test on random population
-        fitness = myfunc(pop(:,1), pop(:,2));
+        fitness = myfunc(pop(:,1), pop(:,2)); %HARDCODED
         arr = [pop, fitness]; 
         disp('Initial parameters (first _nvar_ columns) and fitness values (last col): ')
         disp(num2str(arr))
@@ -155,12 +172,14 @@ function [fit_hist, survivor] = genetic_alg(nvar, span)
         
     end
     survivor = pop(size(arr,1), :);
+    survivor_fitness = arr(size(arr,1), nvar+1);
 end
 
-function [] = scatterplot_fitness(hist, savepath)
+function [] = scatterplot_fitness(hist, savepath, fmax)
     %Scatter plot the fitness of each individual at each epoch
     %:hist: a 2D array of fitnesses with each epoch
     %:savepath: the path to save the figure
+    %:fmax: function maximum determined by gridsearch
     
     fontsize_1 = 20;
     fontsize_2 = 16;
@@ -169,7 +188,8 @@ function [] = scatterplot_fitness(hist, savepath)
     hdl = figure;
     hold on;
     plot(1:size(hist, 1), mean(hist, 2), '--k')
-    legend('Population Mean', 'AutoUpdate', 'off')
+    plot(1:size(hist, 1), fmax*ones(1,size(hist, 1)), '--r')
+    legend('Population Mean', 'Grid Search Max', 'AutoUpdate', 'off')
     
     scatter(1:size(hist, 1), hist, 40, 'MarkerEdgeColor',[0 .5 .5],...
               'MarkerFaceColor',[0 .7 .7],...
@@ -190,4 +210,37 @@ function [] = scatterplot_fitness(hist, savepath)
     savefig(hdl, [savepath, '.fig']);
     close(hdl);
     
+end
+
+function [] = plot_2d_function(span, gridsize, savepath)
+    %Plot the function we plan to optimize
+    %:span: span to plot over
+    %:gridsize: gridsize to use
+    %:savepath: save path
+    
+    fontsize_1 = 20;
+    fontsize_2 = 16;
+    
+    hdl = figure;
+    hold on;
+    
+    x = linspace(-span, span, gridsize);
+    y = linspace(-span, span, gridsize);
+    
+    [X, Y] = meshgrid(x, y);
+    contour(X, Y, myfunc(X, Y), 20);
+    
+             
+    ax = gca;
+
+
+     title('Contour plot of 2D function to be optimized', 'FontSize', fontsize_1);
+     ylabel('Y', 'FontSize', fontsize_2)
+     xlabel('X', 'FontSize', fontsize_2)
+
+    hold off; 
+    
+    saveas(hdl, [savepath, '.png']);
+    savefig(hdl, [savepath, '.fig']);
+    close(hdl);
 end
