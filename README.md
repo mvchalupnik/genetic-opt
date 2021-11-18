@@ -79,6 +79,7 @@ make most sense to use it for functions of number of variables > 2.
 Here is another example that shows the genetic optimization increasing 
 the average population fitness over time, stably. 
 Here, the fitness function has been modified to be a four-variable function:  
+
     function f = myfunc(x1, x2, x3, x4, varargin)
         f = 3*(1-x1).^2.*exp(-(x1.^2) - (x2+1).^2) ... 
         - 10*(x1/5 - x1.^3 - x2.^5).*exp(-x1.^2-x2.^2) ... 
@@ -89,12 +90,13 @@ Here, the fitness function has been modified to be a four-variable function:
     end
 
 and the following parameters are used:
-            f1: 0.0100
+
+    f1: 0.0100
     mutate_els: 1
-            f2: 0.4000
-            f3: 0.9000
-        epochs: 200
-       popsize: 200
+    f2: 0.4000
+    f3: 0.9000
+    epochs: 200
+    popsize: 200
 
 <img src="imgs/fitness_scatterplot_test3.png" width = "600">
 
