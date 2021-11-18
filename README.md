@@ -36,7 +36,15 @@ ease of visualization and ease of comparison to another optimization technique (
  the example function implemented here is only a 2-D function; however, 
 this function can be changed in the code. 
 
-The contour plot below shows the function we want to optimize. 
+In this example, we wish to optimize the following function: 
+
+    function f = myfunc(x1, x2, varargin)
+        f = 3*(1-x1).^2.*exp(-(x1.^2) - (x2+1).^2) ... 
+        - 10*(x1/5 - x1.^3 - x2.^5).*exp(-x1.^2-x2.^2) ... 
+        - 1/3*exp(-(x1+1).^2 - x2.^2);
+    end
+
+The following shows a contour plot: 
 
 <img src="imgs/surf_plot.png" width = "600">
 
@@ -77,19 +85,7 @@ the fitness function; to use genetic optimization at its full potential, it will
 make most sense to use it for functions of number of variables > 2. 
 
 Here is another example that shows the genetic optimization increasing 
-the average population fitness over time, stably. 
-Here, the fitness function has been modified to be a four-variable function:  
-
-    function f = myfunc(x1, x2, x3, x4, varargin)
-        f = 3*(1-x1).^2.*exp(-(x1.^2) - (x2+1).^2) ... 
-        - 10*(x1/5 - x1.^3 - x2.^5).*exp(-x1.^2-x2.^2) ... 
-        - 1/3*exp(-(x1+1).^2 - x2.^2) + ...
-        3*(1-x3).^2.*exp(-(x3.^2) - (x4+1).^2) ... 
-        - 10*(x3/5 - x3.^3 - x4.^5).*exp(-x3.^2-x4.^2) ... 
-        - 1/3*exp(-(x3+1).^2 - x4.^2); 
-    end
-
-and the following parameters are used:
+the average population fitness over time.
 
     f1: 0.0100
     mutate_els: 1
