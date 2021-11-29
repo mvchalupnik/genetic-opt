@@ -211,7 +211,7 @@ class GeneticOptimization():
             #Keep track of best individual over all epochs
             if arr[len(arr)-1, nvar] > best_individual_fitness:
                 best_individual_fitness = arr[len(arr)-1, nvar]
-                best_individual = pop[len(pop)-1, :]
+                best_individual = arr[len(arr)-1, :nvar-1]
 
             # Strip off fitness values and repeat
             pop = arr[:, 0:nvar]

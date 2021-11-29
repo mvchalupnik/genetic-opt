@@ -184,7 +184,7 @@ function [fit_hist, survivor, survivor_fitness, best_individual,...
         %Keep track of best individuals over all epochs
         if arr(size(arr, 1), nvar+1) > best_individual_fitness
            best_individual_fitness = arr(size(arr, 1), nvar+1);
-           best_individual = pop(size(pop, 1), :);
+           best_individual = arr(size(arr, 1), 1:nvar);
         end
         
         %% Strip off fitness values and repeat
