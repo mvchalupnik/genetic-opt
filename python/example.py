@@ -12,7 +12,6 @@ saveloc = savedir + 'python_test/'
 if not os.path.isdir(saveloc):
     os.mkdir(saveloc) 
 
-
 #Define the function we want to optimize
 def myfunc(x1, x2, *args):
     """Some multivariable function with two inputs we wish to optimize over

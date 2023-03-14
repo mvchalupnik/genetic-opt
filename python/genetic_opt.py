@@ -2,7 +2,6 @@
 #Genetic optimization algorithm 
 ##############
 import pdb
-
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -21,14 +20,11 @@ class GridOptimization():
         Span to optimize variables over
     params['gridsize']: int
         Size of grid to search over
-
     """
 
     def __init__(self, params, func):
         self.params = params
         self.f = func
-
-
 
     def grid_optimization(self):
         """
@@ -42,12 +38,10 @@ class GridOptimization():
         gridsize = self.params['gridsize']
         nvar = self.params['nvar']
 
-        
         ls = np.linspace(-span, span, gridsize)
         X = np.meshgrid(*(2*[ls]))
     
         z = self.f(*X)
-
         zmax = np.amax(z)
 
         linear_ind = np.argmax(z)
@@ -56,7 +50,6 @@ class GridOptimization():
         inds = np.flip(inds) #Meshgrid switches dimensions; must flip
 
         return zmax, inds
-
 
     def plot_2d_function(self, savepath):
         """
@@ -73,7 +66,6 @@ class GridOptimization():
         span = self.params['span']
         gridsize = self.params['gridsize']
 
-        
         x = np.linspace(-span, span, gridsize)
         y = np.linspace(-span, span, gridsize)
         
@@ -86,8 +78,6 @@ class GridOptimization():
         plt.tight_layout() 
         fig.savefig(savepath + ".png")
         plt.close()
-
-
 
 
 class GeneticOptimization():
@@ -121,7 +111,6 @@ class GeneticOptimization():
     def __init__(self, params, func):
         self.params = params
         self.f = func
-
 
     def genetic_alg(self):
         """ Optimize via a genetic algorithm, using mutation and combination
@@ -221,8 +210,6 @@ class GeneticOptimization():
         
         return fit_hist, survivor, survivor_fitness, best_individual, best_individual_fitness
 
-
-
     def scatterplot_fitness(self, hist, savepath, fmax):
         #%Scatter plot the fitness of each individual at each epoch
         #:hist: a 2D array of fitnesses with each epoch
@@ -233,7 +220,6 @@ class GeneticOptimization():
         fontsize_2 = 16;
         fontsize_3 = 14;
         
-    
         fig, ax = plt.subplots()
             
         ax.plot(np.arange(1,len(hist[0])+1), np.mean(hist, 0), '--',color='black', label='Population Mean')
@@ -243,15 +229,12 @@ class GeneticOptimization():
         for x in hist:
             plt.scatter(np.arange(1,len(hist[0])+1), x, s=40, color=(0 ,.7, .7), alpha = 0.7)
 
-
         ax.grid(b=True)
         plt.xlim(0, len(hist[0])+1)
 
-        
         plt.title('Fitnesses during genetic optimization', fontsize=fontsize_1)
         plt.ylabel('Fitness', fontsize=fontsize_2)
         plt.xlabel('Epoch', fontsize=fontsize_2)
         plt.tight_layout() 
         fig.savefig(savepath + ".png")
         plt.close()
-                 
